@@ -2,8 +2,8 @@ create table producto(
 	id serial primary key,
 	nombre varchar(50),
 	marca varchar(50),
-	precio_unitario integer,
-	categoria_id integer
+	categoria_id integer,
+	precio_unitario integer
 );
 
 create table categoria(
@@ -13,23 +13,23 @@ create table categoria(
 
 create table item(
 	id serial primary key,
-	cantidad integer,
-	monto_venta integer,
 	orden_id integer,
-	producto_id integer
+	producto_id integer,
+	cantidad integer,
+	monto_venta integer
 );
 
 create table orden(
 	id serial primary key,
-	fecha timestamp,
-	total integer,
 	cliente_id integer,
-	sucursal_id integer
+	sucursal_id integer,
+	fecha timestamp,
+	total integer
 );
 
 create table cliente(
 	id serial primary key,
-	nombre integer,
+	nombre varchar(50),
 	telefono varchar(50)
 );
 
@@ -41,8 +41,10 @@ create table sucursal(
 
 create table stock(
 	id serial primary key,
-	cantidad integer,
 	sucursal_id integer not null,
 	producto_id integer not null,
+	cantidad integer,
 	unique (sucursal_id, producto_id)
 );
+
+ --drop table item 
