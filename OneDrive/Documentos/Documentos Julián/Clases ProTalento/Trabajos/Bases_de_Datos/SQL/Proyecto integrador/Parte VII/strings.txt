@@ -1,0 +1,19 @@
+tables_string = """
+You can operate in the next tables:
+* Category ---> 1
+* Product  ---> 2
+* Item     ---> 3
+* Order    ---> 4
+* Customer ---> 5
+* Store    ---> 6
+* Stock    ---> 7
+"""
+
+
+operations_string = """
+The operations you can execute on the db are:
+* Create    ---> cr
+* To list   ---> tl
+* Obtain    ---> ob
+* Eliminate ---> el
+"""

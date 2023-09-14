@@ -56,5 +56,5 @@ while True:
         if operation == 'cr':
             run_async(create_operation(table))
 
-    elif table == 9:
+    elif table == 'f':
         break

@@ -28,7 +28,9 @@ async def create_operation(table_num):
 
     elif table_num == 2:   # Product
         name_pro, brand_pro, unit_price_pro = list(map(str, input().split()))
+        cat_name = 'juguete'
         int(unit_price_pro)
+        categoria = await Category.get_or_none(name= cat_name)
         new_product = await Product.create(name=name_pro, brand=brand_pro, unit_price=unit_price_pro)
         print(f'Product create: name={new_product.name}, brand={new_product.brand},'
               f' unit_price={new_product.unit_price}')
@@ -62,3 +64,76 @@ async def create_operation(table_num):
         new_stock = await Stock.create(amount=amount_sk, store=store_id_sk, product=product_id_sk)
         print(f'Stock create: id={new_stock.id}, amount={new_stock.amount},'
               f' store_id={store_id_sk}, product_id={product_id_sk}')
+
+
+async def obtain_operation(table_num):
+    if table_num == 1:  # Category
+        category_id = int(input('Enter the category id: '))
+        category_ins = await Category.get_or_none(id=category_id)
+        if category_ins:
+            print(f'Category found: id= {category_ins.id}, name= {category_ins.name}')
+        else:
+            print('Category not found')
+
+    elif table_num == 2:  # Product
+        product_id = int(input('Enter the product id: '))
+        product_ins = await Product.filter(id=product_id).prefetch_related('category').first()
+        if product_ins:
+            print(product_ins)
+        else:
+            print('Product not found')
+
+    elif table_num == 3:  # Item
+        item_id = int(input('Enter the item id: '))
+        item_ins = await Item.get_or_none(id=item_id)
+        if item_ins:
+            print(f'Item found: id= {item_ins.id}, amount= {item_ins.amount}, sale_amount= {item_ins.sale_amount},'
+                  f' product= {item_ins.product}, order= {item_ins.order}')
+        else:
+            print('Item not found')
+
+    elif table_num == 4:  # Order
+        order_id = int(input('Enter the order id: '))
+        order_ins = await Order.get_or_none(id=order_id)
+        if order_ins:
+            print(f'Order found: id= {order_ins.id}, date= {order_ins.date}, total= {order_ins.total},'
+                  f' store= {order_ins.store}, customer= {order_ins.customer}')
+        else:
+            print('Order not found')
+
+    elif table_num == 5:  # Customer
+        customer_id = int(input('Enter the customer id: '))
+        customer_ins = await Customer.get_or_none(id=customer_id)
+        if customer_ins:
+            print(f'Customer found: id= {customer_ins.id}, name= {customer_ins.name},'
+                  f' phone= {customer_ins.phone}')
+        else:
+            print('Customer not found')
+
+    elif table_num == 6:  # Store
+        store_id = int(input('Enter the store id: '))
+        store_ins = await Store.get_or_none(id=store_id)
+        if store_ins:
+            print(f'Store found: id= {store_ins.id}, name= {store_ins.name},'
+                  f' address= {store_ins.address}')
+        else:
+            print('Store not found')
+
+    elif table_num == 7:  # Stock
+        stock_id = int(input('Enter the stock id: '))
+        stock_ins = await Stock.get_or_none(id=stock_id)
+        if stock_ins:
+            print(f'Stock found: id= {stock_ins.id}, amount= {stock_ins.amount},'
+                  f' store= {stock_ins.store}, product= {stock_ins.product}')
+        else:
+            print('Stock not found')
+
+
+async def delete_operation(table_num):
+    if table_num == 1:  # Category
+        category_id = int(input('Enter the category id: '))
+        delete_count = await Category.filter(id=category_id).delete()
+        if delete_count > 0:
+            print('Category delete')
+        else:
+            print('Category not found')
