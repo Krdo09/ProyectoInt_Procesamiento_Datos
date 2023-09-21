@@ -1,10 +1,11 @@
-from datasets import load_dataset
-import numpy as np
+from code import *
 
-dataset = load_dataset("mstz/heart_failure")
+def main():
+    df_data = to_df(data)
+    df1, df2 = separation(df_data)
+    print(average_age(df1))
+    print(average_age(df2))
 
 
-data = dataset["train"]
-arr_age = np.array(data['age'])
-print('The average age in dataset is: {:.2f}'
-      .format(arr_age.mean()))
+if __name__ == '__main__':
+    main()
