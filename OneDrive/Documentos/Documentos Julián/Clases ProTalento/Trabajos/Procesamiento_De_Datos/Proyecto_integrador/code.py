@@ -33,11 +33,11 @@ def average_age(df: pd.DataFrame) -> pd.DataFrame:
 
 # Parte III
 def data_check(df: pd.DataFrame):
-    columns_names = ['age', 'has_anaemia', 'creatinine_phosphokinase_concentration_in_blood',
-                     'has_diabetes', 'heart_ejection_fraction', 'has_high_blood_pressure',
-                     'platelets_concentration_in_blood', 'serum_creatinine_concentration_in_blood',
-                     'serum_sodium_concentration_in_blood', 'is_male', 'is_smoker', 'days_in_study',
-                     'is_dead']
+    columns_names = ['age', 'anaemia', 'creatinine_phosphokinase',
+                     'diabetes', 'ejection_fraction', 'high_blood_pressure',
+                     'platelets', 'serum_creatinine', 'serum_sodium', 'sex',
+                     'smoking', 'time', 'DEATH_EVENT']
+
     for column in columns_names:
         data_type = str(df[column].dtype)
         if data_type == 'int68':
@@ -61,8 +61,94 @@ def smoker(df: pd.DataFrame):
 
 def api_request(source_url: str):
     response = requests.get(source_url)
-    if response.status_code == requests.codes.ok:
+    if response.status_code == requests.codes.ok:  # Verificamos que la respuesta de la pagina sea efectiva - 200
+        # Decodificamos el contenido de la respuesta, ya que son datos numericos
         content = response.content.decode('utf-8')
-        with open('data.csv', 'w', newline='\n') as csv:
+
+        with open('data.csv', 'w', newline='\n') as csv:  # Escritura de los datos
             for line in content:
                 csv.write(line)
+
+
+# Parte V
+
+def data_empty_value_colum(df: pd.DataFrame):
+    columns_names = ['age', 'anaemia', 'creatinine_phosphokinase',
+                     'diabetes', 'ejection_fraction', 'high_blood_pressure',
+                     'platelets', 'serum_creatinine', 'serum_sodium', 'sex',
+                     'smoking', 'time', 'DEATH_EVENT']
+
+    # Rellenamos los valores faltantes con NaN y enviamos mensaje sí hay o no hay valores faltantes
+    empty_colum = False
+    for colum in columns_names:
+        df[f'{colum}'].fillna(np.nan, inplace=True)
+        df_nan = df[df[f'{colum}'] == np.nan].value_counts().reset_index()
+        # Comprobamos si hay valores faltantes
+        if df_nan.empty:
+            print(f'There are no empty values in {colum}')
+            empty_colum = True
+
+        else:
+            print(f'There are empty values in {colum}')
+            empty_colum = False
+    return empty_colum
+
+
+def repeated_data_cleaning(df: pd.DataFrame):
+    # Verificamos si existen valores duplicados en el df
+    duplicated = df.duplicated()
+    duplicated = duplicated[duplicated].value_counts().reset_index()
+    # Imprimimossi no hay filas repetidas o eliminamos si es lo contrario
+    if duplicated.empty:
+        print('There are not duplicated rows')
+    else:
+        df.drop_duplicates(inplace=True)
+        print('The duplicated rows has remove')
+
+
+def remove_outliers(df: pd.DataFrame) -> pd.DataFrame:
+    # La funcion revisara y eliminara las filas que las contengan
+    columns_names = ['creatinine_phosphokinase', 'ejection_fraction',
+                     'platelets', 'serum_creatinine', 'serum_sodium']
+
+    # Calculamos los cuartiles Q1 y Q3 para cada columna
+    for colum in columns_names:
+        Q1 = df[f'{colum}'].quantile(0.25)
+        Q3 = df[f'{colum}'].quantile(0.75)
+        IQR = Q3 - Q1
+        # Definimos limites para outliers
+        lower_bound = Q1 - 1.5 * IQR
+        upper_bound = Q3 + 1.5 * IQR
+        # Eliminamos las filas con outliers
+        df = df[(df[f'{colum}'] >= lower_bound) & (df[f'{colum}'] <= upper_bound)]
+
+    print('The outliers are remove of DataFrame')
+    return df
+
+
+def age_category(df: pd.DataFrame) -> pd.DataFrame:
+    # Definimos los intervalos para el recorte y categorizamos
+    intervals = pd.IntervalIndex.from_tuples([(0, 12), (13, 19), (20, 39), (40, 59), (60, 120)])
+    new_categories = pd.cut(df['age'], intervals, include_lowest=True)
+
+    # Generamos las columnas dummies
+    new_df = pd.get_dummies(new_categories, dtype=int)
+    new_df.columns = ['Children', 'Teenager', 'Young Adult', 'Adult', 'Old Adult']
+
+    # Unimos el df original con las nuevas columnas
+    df_dummies = pd.concat([new_df, df], axis=1)
+
+    return df_dummies
+
+
+def data_processing(df_to_clean: pd.DataFrame):
+    if data_empty_value_colum(df_to_clean):
+        repeated_data_cleaning(df_to_clean)
+        outliers_clean = remove_outliers(df_to_clean)
+
+        print('The cleaning process has been successful')
+        final_data = age_category(outliers_clean)
+        final_data.to_csv('data_clean.csv', index=False)
+
+    else:
+        print('The data has a colum with a empty data. Please check the colum')
