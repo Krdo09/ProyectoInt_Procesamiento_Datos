@@ -58,7 +58,6 @@ def smoker(df: pd.DataFrame):
 
 
 # Parte IV
-
 def api_request(source_url: str):
     response = requests.get(source_url)
     if response.status_code == requests.codes.ok:  # Verificamos que la respuesta de la pagina sea efectiva - 200
@@ -68,10 +67,12 @@ def api_request(source_url: str):
         with open('data.csv', 'w', newline='\n') as csv:  # Escritura de los datos
             for line in content:
                 csv.write(line)
+        print('The data has loading')
+    else:
+        print(f'Something bad has happen, code error: {response.status_code}')
 
 
 # Parte V
-
 def data_empty_value_colum(df: pd.DataFrame):
     columns_names = ['age', 'anaemia', 'creatinine_phosphokinase',
                      'diabetes', 'ejection_fraction', 'high_blood_pressure',
@@ -79,19 +80,17 @@ def data_empty_value_colum(df: pd.DataFrame):
                      'smoking', 'time', 'DEATH_EVENT']
 
     # Rellenamos los valores faltantes con NaN y enviamos mensaje sí hay o no hay valores faltantes
-    empty_colum = False
     for colum in columns_names:
         df[f'{colum}'].fillna(np.nan, inplace=True)
         df_nan = df[df[f'{colum}'] == np.nan].value_counts().reset_index()
         # Comprobamos si hay valores faltantes
         if df_nan.empty:
-            print(f'There are no empty values in {colum}')
-            empty_colum = True
+            pass
 
         else:
             print(f'There are empty values in {colum}')
-            empty_colum = False
-    return empty_colum
+            return False
+    return True
 
 
 def repeated_data_cleaning(df: pd.DataFrame):
