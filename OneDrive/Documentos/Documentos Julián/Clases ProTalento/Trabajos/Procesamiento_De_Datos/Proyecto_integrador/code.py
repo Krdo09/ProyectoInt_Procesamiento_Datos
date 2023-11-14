@@ -161,6 +161,7 @@ def hist_age(df: pd.DataFrame):
     plt.title('Distribución De Edades')
     plt.show()
 
+
 def hist_group(df: pd.DataFrame):
     # Obtenemos la cantidad de anemicos por genero
     anaemia_group = df[['anaemia', 'sex']]
@@ -202,4 +203,38 @@ def hist_group(df: pd.DataFrame):
     ax.set_xlabel('Categorias')
     ax.set_ylabel('Cantidad')
     ax.legend()
+    plt.show()
+
+
+# Parte VIII
+def pies_graphic(df: pd.DataFrame):
+    # Obtenemos la cantidad de anemicos y no anemicos
+    anaemia_group = df['anaemia'].value_counts().to_list()
+
+    # Obtenemos la cantidad de diabeticos y no diabeticos
+    diabetes_group = df['diabetes'].value_counts().to_list()
+
+    # Obtenemos la cantidad de fumadores y no fumadores
+    smokers_group = df['smoking'].value_counts().to_list()
+
+    # Obtenemos a cantidad de muertos y vivos
+    deaths_group = df['DEATH_EVENT'].value_counts().to_list()
+
+    # Organizamos los datos
+    true_groups = [anaemia_group[1], diabetes_group[1], smokers_group[1], deaths_group[1]]
+    false_groups = [anaemia_group[0], diabetes_group[0], smokers_group[0], deaths_group[0]]
+    names = ('Anémicos', 'Diabéticos', 'Fumadores', 'Muertos')
+    category = ('No', 'Si')
+
+    # Grafícamos
+    fig, ax = plt.subplots(1, 4, figsize=(12, 10))
+    for index, true, false, name in zip(range(0, 4), true_groups, false_groups, names):
+        ax[index].pie([false, true], labels=category,
+                      autopct='%1.1f%%',
+                      startangle=90,
+                      colors=['red', 'blue'])
+        # Agreamos titulos
+        ax[index].set_title(f'{name}')
+    # Mostramos la grafíca
+    plt.tight_layout()
     plt.show()
