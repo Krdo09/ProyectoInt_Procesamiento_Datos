@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 from datasets import load_dataset
 import numpy as np
 import pandas as pd
@@ -74,10 +75,7 @@ def api_request(source_url: str):
 
 # Parte V
 def data_empty_value_colum(df: pd.DataFrame):
-    columns_names = ['age', 'anaemia', 'creatinine_phosphokinase',
-                     'diabetes', 'ejection_fraction', 'high_blood_pressure',
-                     'platelets', 'serum_creatinine', 'serum_sodium', 'sex',
-                     'smoking', 'time', 'DEATH_EVENT']
+    columns_names = df.columns
 
     # Rellenamos los valores faltantes con NaN y enviamos mensaje sí hay o no hay valores faltantes
     for colum in columns_names:
@@ -90,6 +88,7 @@ def data_empty_value_colum(df: pd.DataFrame):
         else:
             print(f'There are empty values in {colum}')
             return False
+
     return True
 
 
@@ -151,3 +150,56 @@ def data_processing(df_to_clean: pd.DataFrame):
 
     else:
         print('The data has a colum with a empty data. Please check the colum')
+
+
+# Parte VII
+def hist_age(df: pd.DataFrame):
+    plt.figure(figsize=(7, 5))
+    plt.hist(df['age'], bins=15, edgecolor='black')
+    plt.xlabel('Edad')
+    plt.ylabel('Cantidad')
+    plt.title('Distribución De Edades')
+    plt.show()
+
+def hist_group(df: pd.DataFrame):
+    # Obtenemos la cantidad de anemicos por genero
+    anaemia_group = df[['anaemia', 'sex']]
+    anaemia_group = anaemia_group[anaemia_group['anaemia'] == 1].groupby(['sex']).value_counts().to_list()
+
+    # Obtenemos la cantidad de diabeticos por genero
+    diabetes_group = df[['diabetes', 'sex']]
+    diabetes_group = diabetes_group[diabetes_group['diabetes'] == 1].groupby(['sex']).value_counts().to_list()
+
+    # Obtenemos el grupo de fumadores
+    smokers_group = df[['smoking', 'sex']]
+    smokers_group = smokers_group[smokers_group['smoking'] == 1].groupby(['sex']).value_counts().to_list()
+
+    # Obtenemos el grupo de personas que murieron durante el estudio
+    deaths_group = df[['DEATH_EVENT', 'sex']]
+    deaths_group = deaths_group[deaths_group['DEATH_EVENT'] == 1].groupby(['sex']).value_counts().to_list()
+
+    # Separamos los datos en lista para mujeres y hombres
+    group_names = ('Anémicos', 'Diabeticos', 'Fumadores', 'Muertos')
+    woman_group = [anaemia_group[0], diabetes_group[0], smokers_group[0], deaths_group[0]]
+    man_group = [anaemia_group[1], diabetes_group[1], smokers_group[1], deaths_group[1]]
+
+    # Creamos la figura, el axis númerico y el tamaño de las barras
+    fig, ax = plt.subplots(figsize=(10, 6))
+    numerical_axis = np.arange(len(group_names))
+    bar_width = 0.38
+
+    # Creamos el grafico
+    ax.bar(numerical_axis, man_group,
+           width=bar_width, label='Hombres', color='blue')
+    ax.bar(numerical_axis + bar_width, woman_group,
+           width=bar_width, label='Mujeres', color='red')
+    # Remplazamos los indices númericos por categoricos
+    ax.set_xticks(numerical_axis + bar_width / 2)
+    ax.set_xticklabels(group_names)
+
+    # Agregamos detalles
+    ax.set_title('Histograma Agrupado Por Sexo')
+    ax.set_xlabel('Categorias')
+    ax.set_ylabel('Cantidad')
+    ax.legend()
+    plt.show()
