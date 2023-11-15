@@ -3,7 +3,7 @@ import plotly
 
 def main():
     df = pd.read_csv('data_clean.csv')
-    scatter_graphic(df)
+    model_creation(df)
 
 
 if __name__ == '__main__':

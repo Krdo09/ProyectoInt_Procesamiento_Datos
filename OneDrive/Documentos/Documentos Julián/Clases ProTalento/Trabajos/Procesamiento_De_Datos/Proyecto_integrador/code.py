@@ -4,7 +4,11 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import requests
+from sklearn.linear_model import LinearRegression
 from sklearn.manifold import TSNE
+from sklearn.metrics import mean_squared_error
+from sklearn.model_selection import train_test_split
+
 
 dataset = load_dataset("mstz/heart_failure")
 data = dataset["train"]
@@ -243,19 +247,45 @@ def pies_graphic(df: pd.DataFrame):
 
 
 # Parte IX
-def scatter_graphic(df: pd.DataFrame):
-    # Exportamos la columna DEATH_EVENT a un array unidimensional
-    y = df['DEATH_EVENT'].values
+def eliminate_colum(df: pd.DataFrame, colum_names: list[str], colum_save: list[int]):
+    """
+    Elimina las columnas de un DataFrame de pandas indicadas
+    con el argumento colums_names. Si es necesario almacenar
+    una o más columnas de las que se ván a eliminar del df,
+    con el argumento colum_save enviar una lista con los
+    indices de los nombres almacenados en colum_names.
 
-    # Eliminamos algunas columnas y exportamos la data como np.array
-    new_data = df.drop(df[['Children',
-                           'Teenager',
-                           'Young Adult',
-                           'Adult',
-                           'Old Adult',
-                           'age',
-                           'DEATH_EVENT']], axis=1)
-    numpy_arrays = new_data.values
+    :param df: pd.DataFrame
+    :param colum_names: list[str]
+    :param colum_save: list[int]
+    :return: tuple(pd.DataFrame, pd.Series | pd.DataFrame)
+    """
+
+    # Almacenamos las columnas si el argumento colum_save es utilizado
+    if len(colum_save) != 0:
+        to_save = []
+        for index in colum_save:
+            to_save.append(colum_names[index])
+
+        finally_colum = df[to_save]
+
+    # Eliminamos las columnas indicadas
+    new_data = df.drop(df[colum_names], axis=1)
+
+    return new_data, finally_colum
+
+
+def scatter_graphic(df: pd.DataFrame):
+    # Eliminamos las columnas y transformamos los datos
+    to_eliminate = ['Children',
+                    'Teenager',
+                    'Young Adult',
+                    'Adult',
+                    'Old Adult',
+                    'DEATH_EVENT']
+    numpy_arrays, y = eliminate_colum(df, colum_names=to_eliminate, colum_save=[5])
+    numpy_arrays = numpy_arrays.values
+    y = y.values
 
     # Hacemos la transformación dimensional
     X_embedded = TSNE(
@@ -273,7 +303,7 @@ def scatter_graphic(df: pd.DataFrame):
         mode='markers',
         marker=dict(
             size=3,
-            color=y,
+            color=y[:, 0],
             colorscale='Viridis',
             opacity=0.8
         )
@@ -290,4 +320,59 @@ def scatter_graphic(df: pd.DataFrame):
 
     fig.write_html('3d_graphic.html', auto_open=False)
 
+
 # Parte X
+def lin_regression_model(df: pd.DataFrame) -> (LinearRegression, float):
+    # Eliminamos las columnas y obtenemos el vector
+    to_eliminate = ['Children',
+                    'Teenager',
+                    'Young Adult',
+                    'Adult',
+                    'Old Adult',
+                    'age',
+                    'DEATH_EVENT']
+    x, y = eliminate_colum(df, colum_names=to_eliminate, colum_save=[5])
+
+    # Creamos el modelo y lo entrenamos
+    model = LinearRegression()
+    model.fit(x, y)
+
+    # Calculamos R^2
+    r_squared = model.score(x, y)
+
+    return model, r_squared
+
+
+def predictions(df: pd.DataFrame, model: LinearRegression):
+    # Obtenemos los datos para las prediccionas
+    to_eliminate = ['Children',
+                    'Teenager',
+                    'Young Adult',
+                    'Adult',
+                    'Old Adult',
+                    'age',
+                    'DEATH_EVENT']
+    df_to_predictions, true_age = eliminate_colum(df, colum_names=to_eliminate, colum_save=[5])
+
+    # Realizamos las prediciones
+    new_data = df_to_predictions.iloc[:5, :]
+    true_age = true_age.iloc[:5].values
+    age_prediction = model.predict(new_data)
+
+    print('Predictions:', age_prediction, sep='\n')
+    print('True age:', true_age, sep='\n')
+
+    return age_prediction, true_age
+
+
+def lineal_regression_metrics(r_squared: float, y_predicted: list, y_true: list):
+    # Calculamos el error cuadrático medio
+    mse = mean_squared_error(y_true, y_predicted)
+    print('Error cuadrático medio (MSE):', mse)
+    print('Coeficiente de determinación:', r_squared)
+
+
+def model_creation(df_to_model: pd.DataFrame):
+    model, r_squared = lin_regression_model(df_to_model)
+    y_predicted, y_true = predictions(df_to_model, model)
+    lineal_regression_metrics(r_squared, y_predicted, y_true)
