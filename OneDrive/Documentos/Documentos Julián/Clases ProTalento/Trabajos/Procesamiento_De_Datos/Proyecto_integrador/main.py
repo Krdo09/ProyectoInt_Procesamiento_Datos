@@ -3,7 +3,7 @@ import plotly
 
 def main():
     df = pd.read_csv('data_clean.csv')
-    model_creation(df)
+    tree_model(df)
 
 
 if __name__ == '__main__':

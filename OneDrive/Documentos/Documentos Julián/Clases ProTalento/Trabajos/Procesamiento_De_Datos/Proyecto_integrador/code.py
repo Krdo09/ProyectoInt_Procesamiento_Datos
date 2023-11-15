@@ -6,8 +6,9 @@ import plotly.graph_objects as go
 import requests
 from sklearn.linear_model import LinearRegression
 from sklearn.manifold import TSNE
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_squared_error, accuracy_score
 from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier
 
 
 dataset = load_dataset("mstz/heart_failure")
@@ -376,3 +377,49 @@ def model_creation(df_to_model: pd.DataFrame):
     model, r_squared = lin_regression_model(df_to_model)
     y_predicted, y_true = predictions(df_to_model, model)
     lineal_regression_metrics(r_squared, y_predicted, y_true)
+
+
+# Parte XI
+def distribution_graphic(df: pd.DataFrame):
+    # Obtemos la distribucion de las clases
+    classes = ['Children', 'Teenager', 'Young Adult', 'Adult', 'Old Adult']
+    df = df[classes]
+    classes_distribution = []
+    for name in classes:
+        value = df[df[f'{name}'] == 1].value_counts()
+        if value.empty:
+            classes_distribution.append(0)
+        else:
+            value = value.to_list()
+            classes_distribution.append(value[0])
+
+    # Graficamos los datos
+    plt.figure(figsize=(10, 8))
+    plt.bar(classes, height=classes_distribution, width=0.7)
+    plt.title('Distribución de las clases')
+    plt.xlabel('Categorias')
+    plt.ylabel('Cantidad')
+    plt.show()
+
+
+def tree_model(df: pd.DataFrame):
+    # Eliminamos las columnas innecesarias
+    to_eliminate = ['Children',
+                    'Teenager',
+                    'Young Adult',
+                    'Adult',
+                    'Old Adult']
+    X, y = eliminate_colum(df, colum_names=to_eliminate, colum_save=[i for i in range(len(to_eliminate))])
+
+    # Realizamos la partición
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, stratify=y, random_state=42)
+
+    # Instanciamos nuestro modelo
+    tree = DecisionTreeClassifier()
+    # Entrenamos el modelo
+    tree.fit(X_train, y_train)
+
+    # Realizamos las predicciones
+    y_pred_test = tree.predict(X_test)
+    print("Precisión del modelo en test:", accuracy_score(y_test, y_pred_test))
+    
