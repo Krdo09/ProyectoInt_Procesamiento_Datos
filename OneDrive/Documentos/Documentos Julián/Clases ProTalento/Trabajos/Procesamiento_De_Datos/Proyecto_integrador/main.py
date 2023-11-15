@@ -1,8 +1,9 @@
 from code import *
+import plotly
 
 def main():
     df = pd.read_csv('data_clean.csv')
-    pies_graphic(df)
+    scatter_graphic(df)
 
 
 if __name__ == '__main__':

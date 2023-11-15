@@ -1,5 +1,6 @@
 import pandas as pd
 from code import api_request, data_processing
+import sys
 
 def automatic_loading(url: str):
     """
@@ -22,5 +23,5 @@ def automatic_loading(url: str):
     print('The process of load has been completed successfully')
 
 
-url = input('Enter the url')
+url = sys.argv[1]
 automatic_loading(url)

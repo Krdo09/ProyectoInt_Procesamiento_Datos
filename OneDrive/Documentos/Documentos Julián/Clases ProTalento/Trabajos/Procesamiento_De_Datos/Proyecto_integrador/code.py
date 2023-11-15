@@ -1,8 +1,10 @@
-import matplotlib.pyplot as plt
 from datasets import load_dataset
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import plotly.graph_objects as go
 import requests
+from sklearn.manifold import TSNE
 
 dataset = load_dataset("mstz/heart_failure")
 data = dataset["train"]
@@ -162,7 +164,7 @@ def hist_age(df: pd.DataFrame):
     plt.show()
 
 
-def hist_group(df: pd.DataFrame):
+def hist_group_graphic(df: pd.DataFrame):
     # Obtenemos la cantidad de anemicos por genero
     anaemia_group = df[['anaemia', 'sex']]
     anaemia_group = anaemia_group[anaemia_group['anaemia'] == 1].groupby(['sex']).value_counts().to_list()
@@ -238,3 +240,54 @@ def pies_graphic(df: pd.DataFrame):
     # Mostramos la grafíca
     plt.tight_layout()
     plt.show()
+
+
+# Parte IX
+def scatter_graphic(df: pd.DataFrame):
+    # Exportamos la columna DEATH_EVENT a un array unidimensional
+    y = df['DEATH_EVENT'].values
+
+    # Eliminamos algunas columnas y exportamos la data como np.array
+    new_data = df.drop(df[['Children',
+                           'Teenager',
+                           'Young Adult',
+                           'Adult',
+                           'Old Adult',
+                           'age',
+                           'DEATH_EVENT']], axis=1)
+    numpy_arrays = new_data.values
+
+    # Hacemos la transformación dimensional
+    X_embedded = TSNE(
+        n_components=3,
+        learning_rate='auto',
+        init='random',
+        perplexity=3
+    ).fit_transform(numpy_arrays)
+
+    # Creamos la gráfica
+    fig = go.Figure()
+
+    fig.add_trace(go.Scatter3d(
+        x=X_embedded[:, 0], y=X_embedded[:, 1], z=X_embedded[:, 2],
+        mode='markers',
+        marker=dict(
+            size=3,
+            color=y,
+            colorscale='Viridis',
+            opacity=0.8
+        )
+    ))
+
+    fig.update_layout(
+        title='Gráfico de dispersión 3D',
+        scene=dict(
+            xaxis_title='X',
+            yaxis_title='Y',
+            zaxis_title='Z'
+        )
+    )
+
+    fig.write_html('3d_graphic.html', auto_open=False)
+
+# Parte X
