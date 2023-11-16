@@ -4,9 +4,10 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import requests
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LinearRegression
 from sklearn.manifold import TSNE
-from sklearn.metrics import mean_squared_error, accuracy_score
+from sklearn.metrics import mean_squared_error, accuracy_score, confusion_matrix, f1_score
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
 
@@ -134,6 +135,7 @@ def remove_outliers(df: pd.DataFrame) -> pd.DataFrame:
 def age_category(df: pd.DataFrame) -> pd.DataFrame:
     # Definimos los intervalos para el recorte y categorizamos
     intervals = pd.IntervalIndex.from_tuples([(0, 12), (13, 19), (20, 39), (40, 59), (60, 120)])
+    print(intervals)
     new_categories = pd.cut(df['age'], intervals, include_lowest=True)
 
     # Generamos las columnas dummies
@@ -422,4 +424,29 @@ def tree_model(df: pd.DataFrame):
     # Realizamos las predicciones
     y_pred_test = tree.predict(X_test)
     print("Precisión del modelo en test:", accuracy_score(y_test, y_pred_test))
+
+
+# Parte XII
+def random_forest(df: pd.DataFrame):
+    # Eliminamos las columnas innecesarias
+    to_eliminate = ['Children',
+                    'Teenager',
+                    'Young Adult',
+                    'Adult',
+                    'Old Adult']
+    X, y = eliminate_colum(df, colum_names=to_eliminate, colum_save=[i for i in range(len(to_eliminate))])
+
+    # Realizamos la partición
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, stratify=y, random_state=42)
+
+    # Creamos el modelo
+    r_forest = RandomForestClassifier(random_state=42)
+    r_forest.fit(X_train, y_train)  # Entrenamos el modelo
+
+    # Calculamos su matriz de confusion
+    y_pred = r_forest.predict(X_test)
+    matrix = confusion_matrix(y_test, y_pred)
+    print('La matriz de confusion es:', matrix)
+
+    # Calculamos el F1-Score y accuracy
     
