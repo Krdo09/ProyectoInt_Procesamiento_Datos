@@ -135,7 +135,6 @@ def remove_outliers(df: pd.DataFrame) -> pd.DataFrame:
 def age_category(df: pd.DataFrame) -> pd.DataFrame:
     # Definimos los intervalos para el recorte y categorizamos
     intervals = pd.IntervalIndex.from_tuples([(0, 12), (13, 19), (20, 39), (40, 59), (60, 120)])
-    print(intervals)
     new_categories = pd.cut(df['age'], intervals, include_lowest=True)
 
     # Generamos las columnas dummies
@@ -411,7 +410,8 @@ def tree_model(df: pd.DataFrame):
                     'Young Adult',
                     'Adult',
                     'Old Adult']
-    X, y = eliminate_colum(df, colum_names=to_eliminate, colum_save=[i for i in range(len(to_eliminate))])
+    X, y = eliminate_colum(df, colum_names=to_eliminate, colum_save=[4])
+    y = y.values[:, 0]
 
     # Realizamos la partición
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, stratify=y, random_state=42)
@@ -434,7 +434,8 @@ def random_forest(df: pd.DataFrame):
                     'Young Adult',
                     'Adult',
                     'Old Adult']
-    X, y = eliminate_colum(df, colum_names=to_eliminate, colum_save=[i for i in range(len(to_eliminate))])
+    X, y = eliminate_colum(df, colum_names=to_eliminate, colum_save=[4])
+    y = y.values[:, 0]
 
     # Realizamos la partición
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, stratify=y, random_state=42)
@@ -446,7 +447,8 @@ def random_forest(df: pd.DataFrame):
     # Calculamos su matriz de confusion
     y_pred = r_forest.predict(X_test)
     matrix = confusion_matrix(y_test, y_pred)
-    print('La matriz de confusion es:', matrix)
+    print('La matriz de confusion es:', matrix, sep='\n')
 
     # Calculamos el F1-Score y accuracy
-    
+    print(f'El f1-score es: {f1_score(y_test, y_pred)}',
+          f'El accuracy es: {accuracy_score(y_test, y_pred)}', sep='\n')
